@@ -51,10 +51,10 @@ const Sidebar = () => {
           <span>Categories</span>
         </NavLink>
 
-        <div className="sidebar-nav-item disabled">
+        <NavLink to="/goals" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">🎯</span>
           <span>Goals</span>
-        </div>
+        </NavLink>
 
         <div className="sidebar-nav-item disabled">
           <span className="nav-icon">⚙️</span>
@@ -66,8 +66,8 @@ const Sidebar = () => {
       <div className="sidebar-promo-card">
         <h4>Track. Save. Achieve.</h4>
         <p>Set budgets and achieve your financial goals faster.</p>
-        <div className="promo-illustration">🐷</div>
-        <button className="btn-promo" onClick={() => alert('Goal tracking feature active.')}>
+        <div className="promo-illustration">🎯</div>
+        <button className="btn-promo" onClick={() => navigate('/goals')}>
           Set Goal
         </button>
       </div>
