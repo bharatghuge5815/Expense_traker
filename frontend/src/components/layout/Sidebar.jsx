@@ -13,10 +13,15 @@ const Sidebar = () => {
 
   return (
     <aside className="app-sidebar">
-      {/* Top Logo */}
+      {/* Top Logo & User Name */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">📈</div>
-        <span className="sidebar-logo-text">Expense Tracker</span>
+        <div>
+          <span className="sidebar-logo-text">Expense Tracker</span>
+          <div style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: '600', marginTop: '0.15rem' }}>
+            👤 {user?.name || 'Ajinkya Bhalerao'}
+          </div>
+        </div>
       </div>
 
       {/* Main Nav Links with Exact Emojis */}
