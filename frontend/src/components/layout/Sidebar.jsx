@@ -36,15 +36,15 @@ const Sidebar = () => {
           <span>Add Expense</span>
         </NavLink>
 
-        <div className="sidebar-nav-item disabled">
+        <NavLink to="/budgets" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">💰</span>
           <span>Budgets</span>
-        </div>
+        </NavLink>
 
-        <div className="sidebar-nav-item disabled">
+        <NavLink to="/reports" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">📈</span>
           <span>Reports</span>
-        </div>
+        </NavLink>
 
         <div className="sidebar-nav-item disabled">
           <span className="nav-icon">🏷️</span>

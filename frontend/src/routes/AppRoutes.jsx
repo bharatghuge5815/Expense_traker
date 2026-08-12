@@ -6,6 +6,8 @@ import Home from '../pages/Home';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import AddExpense from '../pages/AddExpense';
+import Budgets from '../pages/Budgets';
+import Reports from '../pages/Reports';
 import HealthStatus from '../pages/HealthStatus';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -36,6 +38,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <AddExpense />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets"
+        element={
+          <ProtectedRoute>
+            <Budgets />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <Reports />
           </ProtectedRoute>
         }
       />
