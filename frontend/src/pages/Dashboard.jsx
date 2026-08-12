@@ -26,6 +26,9 @@ const Dashboard = () => {
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [incomeInput, setIncomeInput] = useState('');
 
+  // Calendar Date Picker Modal State
+  const [showDateModal, setShowDateModal] = useState(false);
+
   // Calendar Exact Date Filter State (defaults to today's YYYY-MM-DD e.g. 2026-08-12)
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
 
@@ -211,6 +214,59 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Change Selected Date Modal */}
+        {showDateModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div className="dashboard-card" style={{ width: '100%', maxWidth: '400px', padding: '1.75rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.5rem' }}>
+                Select Exact Date 📅
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.25rem' }}>
+                Pick a date to view total expenses logged for that specific day
+              </p>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label className="auth-input-label">Select Date *</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="auth-input-field"
+                  style={{ paddingLeft: '1rem', fontSize: '1rem', fontWeight: '600' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate('')}
+                  style={{
+                    padding: '0.65rem 1rem', borderRadius: '8px',
+                    border: '1px solid #e2e8f0', backgroundColor: '#ffffff',
+                    color: '#64748b', fontWeight: '600', cursor: 'pointer'
+                  }}
+                >
+                  Clear Date
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowDateModal(false)}
+                  className="btn-auth-primary"
+                  style={{ width: 'auto', padding: '0.65rem 1.25rem' }}
+                >
+                  Apply Date
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
             <div className="status-badge loading" style={{ display: 'inline-flex' }}>
@@ -262,6 +318,7 @@ const Dashboard = () => {
                 trend={formattedDateLabel}
                 iconBg="#f3e8ff"
                 iconColor="#9333ea"
+                onEdit={() => setShowDateModal(true)}
               />
             </div>
 
