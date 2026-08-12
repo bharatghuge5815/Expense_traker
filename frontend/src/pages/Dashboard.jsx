@@ -16,8 +16,13 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Period Filter State: THIS_MONTH, LAST_MONTH, THIS_YEAR, ALL_TIME
-  const [selectedPeriod, setSelectedPeriod] = useState('THIS_MONTH');
+  // Calendar Month-Year Filter State (defaults to current YYYY-MM)
+  const [selectedMonthYear, setSelectedMonthYear] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  });
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -38,37 +43,27 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  // Filter raw recent expenses by selected date period
+  // Filter raw expenses by selected Calendar Month & Year
   const rawExpenses = data?.recent_expenses || [];
   const filteredExpenses = rawExpenses.filter((item) => {
     if (!item.expense_date) return true;
-    const itemDate = new Date(item.expense_date);
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-
-    if (selectedPeriod === 'THIS_MONTH') {
-      return itemDate.getFullYear() === currentYear && itemDate.getMonth() === currentMonth;
-    }
-    if (selectedPeriod === 'LAST_MONTH') {
-      const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-      const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-      return itemDate.getFullYear() === lastMonthYear && itemDate.getMonth() === lastMonth;
-    }
-    if (selectedPeriod === 'THIS_YEAR') {
-      return itemDate.getFullYear() === currentYear;
-    }
-    return true; // ALL_TIME
+    const itemMonthYear = new Date(item.expense_date).toISOString().slice(0, 7);
+    return itemMonthYear === selectedMonthYear;
   });
 
-  // Calculate dynamic totals for selected period
+  // Calculate dynamic totals for selected calendar month
   const periodExpensesSum = filteredExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const displayTotalExpenses = periodExpensesSum > 0 ? periodExpensesSum : Number(data?.total_expenses || 0);
-  const thisMonthValue = Number(data?.this_month || periodExpensesSum || 0);
   const totalIncome = 72300;
   const netSavings = Math.max(0, totalIncome - displayTotalExpenses);
 
-  // Compute dynamic category breakdown for selected period
+  // Format month name for display (e.g. "August 2026")
+  const formattedMonthLabel = new Date(`${selectedMonthYear}-01`).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric'
+  });
+
+  // Compute dynamic category breakdown for selected calendar month
   const periodCategoryMap = {};
   filteredExpenses.forEach(item => {
     const cat = item.category_name || 'Other';
@@ -93,23 +88,30 @@ const Dashboard = () => {
               Welcome back, {user?.name || 'Ajinkya'}! 👋
             </h1>
             <p className="dashboard-subgreeting">
-              Here's what's happening with your finances today.
+              Here's what's happening with your finances in {formattedMonthLabel}.
             </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            {/* Interactive "This Month" Date Filter Dropdown */}
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="date-filter-pill"
-              style={{ outline: 'none', cursor: 'pointer' }}
-            >
-              <option value="THIS_MONTH">📅 This Month</option>
-              <option value="LAST_MONTH">📅 Last Month</option>
-              <option value="THIS_YEAR">📅 This Year</option>
-              <option value="ALL_TIME">📅 All Time</option>
-            </select>
+            {/* Interactive Calendar Month-Year Picker */}
+            <div className="date-filter-pill" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 0.85rem' }}>
+              <span>📅</span>
+              <input
+                type="month"
+                value={selectedMonthYear}
+                onChange={(e) => setSelectedMonthYear(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                  fontWeight: '600',
+                  fontSize: '0.9rem',
+                  color: '#334155',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
 
             <button className="btn-add-expense" onClick={() => navigate('/add-expense')}>
               + Add Expense
@@ -133,7 +135,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            {/* Top Row: 4 Metric Cards Filtered by Period */}
+            {/* Top Row: 4 Metric Cards Filtered by Calendar Month */}
             <div className="dashboard-grid-4">
               <SummaryCard
                 title="Total Income"
@@ -147,7 +149,7 @@ const Dashboard = () => {
                 title="Total Expenses"
                 value={displayTotalExpenses}
                 icon="⬆️"
-                trend={`${filteredExpenses.length || data?.expense_count || 0} transactions`}
+                trend={`${filteredExpenses.length || data?.expense_count || 0} transactions logged`}
                 isNegative={true}
                 iconBg="#fee2e2"
                 iconColor="#ef4444"
@@ -161,10 +163,10 @@ const Dashboard = () => {
                 iconColor="#2563eb"
               />
               <SummaryCard
-                title="This Period"
-                value={thisMonthValue}
+                title="Selected Month"
+                value={displayTotalExpenses}
                 icon="📅"
-                trend={selectedPeriod.replace('_', ' ')}
+                trend={formattedMonthLabel}
                 iconBg="#f3e8ff"
                 iconColor="#9333ea"
               />
@@ -202,10 +204,10 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>
-                    Financial Insight ({selectedPeriod.replace('_', ' ')})
+                    Financial Insight ({formattedMonthLabel})
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    Showing metrics for {selectedPeriod.toLowerCase().replace('_', ' ')}. Keep tracking to save more!
+                    Showing metrics for {formattedMonthLabel}. Keep tracking to save more!
                   </p>
                 </div>
               </div>
