@@ -13,13 +13,43 @@ const Sidebar = () => {
 
   return (
     <aside className="app-sidebar">
-      {/* Top Logo & User Name */}
-      <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">📈</div>
-        <div>
+      {/* Top Logo & User Profile Header Card */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div className="sidebar-logo" style={{ marginBottom: '0.85rem' }}>
+          <div className="sidebar-logo-icon">📈</div>
           <span className="sidebar-logo-text">Expense Tracker</span>
-          <div style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: '600', marginTop: '0.15rem' }}>
-            👤 {user?.name || 'Ajinkya Bhalerao'}
+        </div>
+
+        {/* User Card Under Expense Tracker */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.65rem',
+          padding: '0.6rem 0.75rem',
+          backgroundColor: '#f0fdf4',
+          border: '1px solid #bbf7d0',
+          borderRadius: '12px'
+        }}>
+          <div style={{
+            width: '34px',
+            height: '34px',
+            borderRadius: '50%',
+            backgroundColor: '#dcfce7',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.1rem',
+            flexShrink: 0
+          }}>
+            👤
+          </div>
+          <div style={{ overflow: 'hidden', flex: 1 }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {user?.name || 'Ajinkya Bhalerao'}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {user?.email || 'user@gmail.com'}
+            </div>
           </div>
         </div>
       </div>
