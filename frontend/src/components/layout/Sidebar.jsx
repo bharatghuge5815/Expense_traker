@@ -107,16 +107,8 @@ const Sidebar = () => {
         </button>
       </div>
 
-      {/* User Profile & Left Bottom Corner Logout */}
+      {/* Left Bottom Corner Logout Button */}
       <div className="sidebar-user-section">
-        <div className="sidebar-user-pill">
-          <div className="user-avatar">👤</div>
-          <div className="user-info">
-            <div className="user-name">{user?.name || 'Ajinkya B.'}</div>
-            <div className="user-mobile">{user?.email || '+91 12345 67890'}</div>
-          </div>
-        </div>
-
         <button onClick={handleLogout} className="sidebar-logout-btn" title="Logout of session">
           <span style={{ fontSize: '1.1rem' }}>🚪</span>
           <span>Logout</span>
