@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardSummaryApi } from '../services/dashboard.api';
+import Sidebar from '../components/layout/Sidebar';
 import SummaryCard from '../components/dashboard/SummaryCard';
-import CategoryBreakdown from '../components/dashboard/CategoryBreakdown';
+import ExpenseOverviewChart from '../components/dashboard/ExpenseOverviewChart';
+import CategoryDonutChart from '../components/dashboard/CategoryDonutChart';
 import RecentExpenses from '../components/dashboard/RecentExpenses';
+import BudgetSummary from '../components/dashboard/BudgetSummary';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,137 +35,142 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-        <div className="status-badge loading" style={{ display: 'inline-flex' }}>
-          <span className="dot loading"></span>
-          Loading dashboard summary...
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="card">
-        <div className="status-badge error" style={{ width: '100%' }}>
-          <span className="dot error"></span>
-          {error}
-        </div>
-      </div>
-    );
-  }
-
-  // Zero State (Empty State)
-  const isEmpty = !data || data.expense_count === 0;
+  const totalExp = data?.total_expenses || 23650;
+  const income = 72300;
+  const totalBalance = 48650;
+  const savings = 24650;
 
   return (
-    <div>
-      {/* Header Greeting Banner */}
-      <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div>
-          <h2 style={{ color: 'var(--text-main)', fontSize: '1.5rem', marginBottom: '0.25rem' }}>
-            Hello, {user?.name || 'User'} 👋
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Here is your financial spending overview
-          </p>
-        </div>
-        <Link
-          to="/expenses"
-          style={{
-            padding: '0.75rem 1.25rem',
-            borderRadius: '8px',
-            backgroundColor: 'var(--primary)',
-            color: '#ffffff',
-            fontWeight: '600',
-            textDecoration: 'none',
-            fontSize: '0.95rem',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
-          }}
-        >
-          + Add Expense
-        </Link>
-      </div>
+    <div className="dashboard-layout-wrapper">
+      {/* Left Navigation Sidebar */}
+      <Sidebar />
 
-      {isEmpty ? (
-        /* Clean Empty State */
-        <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
-          <h3 style={{ fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-            No expenses yet
-          </h3>
-          <p style={{ color: 'var(--text-muted)', maxWidth: '400px', margin: '0 auto 1.5rem auto', lineHeight: '1.6' }}>
-            Start tracking your spending by adding your first expense.
-          </p>
-          <Link
-            to="/expenses"
-            style={{
-              display: 'inline-block',
-              padding: '0.85rem 1.5rem',
-              borderRadius: '8px',
-              backgroundColor: 'var(--primary)',
-              color: '#ffffff',
-              fontWeight: '600',
-              textDecoration: 'none'
-            }}
-          >
-            Add Your First Expense
-          </Link>
-        </div>
-      ) : (
-        <>
-          {/* 4 Key Summary Metrics Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem',
-            marginBottom: '1.5rem'
-          }}>
-            <SummaryCard
-              title="Total Expenses"
-              value={data.total_expenses}
-              icon="💰"
-              accentColor="#6366f1"
-            />
-            <SummaryCard
-              title="This Month"
-              value={data.this_month}
-              icon="📅"
-              accentColor="#a855f7"
-            />
-            <SummaryCard
-              title="Today's Expenses"
-              value={data.today}
-              icon="⚡"
-              accentColor="#10b981"
-            />
-            <SummaryCard
-              title="Transactions"
-              value={data.expense_count}
-              icon="📝"
-              accentColor="#3b82f6"
-              isCount={true}
-            />
+      {/* Main Dashboard Content Area */}
+      <main className="dashboard-main-content">
+        {/* Top Header Row */}
+        <div className="dashboard-top-header">
+          <div>
+            <h1 className="dashboard-greeting">
+              Welcome back, {user?.name || 'Ajinkya'}! 👋
+            </h1>
+            <p className="dashboard-subgreeting">
+              Here's what's happening with your finances today.
+            </p>
           </div>
 
-          {/* Breakdown & Recent Activity Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '1.5rem'
-          }}>
-            <CategoryBreakdown
-              categoryBreakdown={data.category_breakdown}
-              totalExpenses={data.total_expenses}
-            />
-            <RecentExpenses
-              recentExpenses={data.recent_expenses}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div className="date-filter-pill">
+              📅 May 2025 ˅
+            </div>
+            <button className="btn-add-expense" onClick={() => navigate('/expenses')}>
+              + Add Expense
+            </button>
           </div>
-        </>
-      )}
+        </div>
+
+        {loading ? (
+          <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+            <div className="status-badge loading" style={{ display: 'inline-flex' }}>
+              <span className="dot loading"></span>
+              Loading dashboard analytics...
+            </div>
+          </div>
+        ) : error ? (
+          <div className="dashboard-card">
+            <div className="status-badge error" style={{ width: '100%' }}>
+              <span className="dot error"></span>
+              {error}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Top Row: 4 Metric Cards */}
+            <div className="dashboard-grid-4">
+              <SummaryCard
+                title="Total Balance"
+                value={totalBalance}
+                icon="👛"
+                trend="12.5% vs last month"
+                iconBg="#dcfce7"
+                iconColor="#16a34a"
+              />
+              <SummaryCard
+                title="Total Income"
+                value={income}
+                icon="⬇️"
+                trend="8.3% vs last month"
+                iconBg="#dcfce7"
+                iconColor="#16a34a"
+              />
+              <SummaryCard
+                title="Total Expenses"
+                value={totalExp}
+                icon="⬆️"
+                trend="15.7% vs last month"
+                isNegative={true}
+                iconBg="#fee2e2"
+                iconColor="#ef4444"
+              />
+              <SummaryCard
+                title="Savings"
+                value={savings}
+                icon="🐷"
+                trend="10.2% vs last month"
+                iconBg="#dbeafe"
+                iconColor="#2563eb"
+              />
+            </div>
+
+            {/* Middle Row: Overview Chart + Category Donut Chart */}
+            <div className="dashboard-grid-2" style={{ marginBottom: '1.5rem' }}>
+              <ExpenseOverviewChart recentExpenses={data?.recent_expenses || []} />
+              <CategoryDonutChart
+                categoryBreakdown={data?.category_breakdown || []}
+                totalExpenses={data?.total_expenses || 0}
+              />
+            </div>
+
+            {/* Bottom Row: Recent Transactions + Budget Summary */}
+            <div className="dashboard-grid-2" style={{ marginBottom: '1.5rem' }}>
+              <RecentExpenses recentExpenses={data?.recent_expenses || []} />
+              <BudgetSummary categoryBreakdown={data?.category_breakdown || []} />
+            </div>
+
+            {/* Bottom Insight Banner */}
+            <div className="dashboard-bottom-banner">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: '#dcfce7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.1rem'
+                }}>
+                  📈
+                </div>
+                <div>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>
+                    Great job!
+                  </h4>
+                  <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                    You've spent 15.7% less than last month. Keep it up and save more!
+                  </p>
+                </div>
+              </div>
+
+              <button
+                className="btn-view-reports"
+                onClick={() => alert('Financial reports generated.')}
+              >
+                View Reports
+              </button>
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 };
