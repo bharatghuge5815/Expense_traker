@@ -26,13 +26,8 @@ const Dashboard = () => {
   const [showIncomeModal, setShowIncomeModal] = useState(false);
   const [incomeInput, setIncomeInput] = useState('');
 
-  // Calendar Month-Year Filter State
-  const [selectedMonthYear, setSelectedMonthYear] = useState(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
-  });
+  // Calendar Exact Date Filter State (defaults to today's YYYY-MM-DD e.g. 2026-08-12)
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -53,26 +48,29 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  // Filter raw expenses by selected Calendar Month & Year
+  // Filter raw expenses by selected Calendar Exact Date
   const rawExpenses = data?.recent_expenses || [];
   const filteredExpenses = rawExpenses.filter((item) => {
     if (!item.expense_date) return true;
-    const itemMonthYear = new Date(item.expense_date).toISOString().slice(0, 7);
-    return itemMonthYear === selectedMonthYear;
+    if (!selectedDate) return true;
+    const itemDateStr = new Date(item.expense_date).toISOString().split('T')[0];
+    return itemDateStr === selectedDate;
   });
 
-  // Calculate dynamic totals for selected calendar month
+  // Calculate dynamic totals for selected calendar date
   const periodExpensesSum = filteredExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const displayTotalExpenses = periodExpensesSum > 0 ? periodExpensesSum : Number(data?.total_expenses || 0);
+  const displayTotalExpenses = (selectedDate && filteredExpenses.length > 0)
+    ? periodExpensesSum
+    : Number(data?.total_expenses || periodExpensesSum || 0);
+
   const netSavings = Math.max(0, monthlyIncome - displayTotalExpenses);
 
-  // Formatted display label (e.g. "August 2026")
-  const formattedMonthLabel = new Date(`${selectedMonthYear}-01`).toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric'
-  });
+  // Formatted display label (e.g. "12 Aug 2026")
+  const formattedDateLabel = selectedDate
+    ? new Date(selectedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : 'All Dates';
 
-  // Compute dynamic category breakdown for selected calendar month
+  // Compute dynamic category breakdown for selected calendar date
   const periodCategoryMap = {};
   filteredExpenses.forEach(item => {
     const cat = item.category_name || 'Other';
@@ -116,18 +114,18 @@ const Dashboard = () => {
               Welcome back, {user?.name || 'Ajinkya'}! 👋
             </h1>
             <p className="dashboard-subgreeting">
-              Here's what's happening with your finances in {formattedMonthLabel}.
+              Here's what's happening with your finances on {formattedDateLabel}.
             </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            {/* Clean Calendar Month-Year Picker */}
+            {/* Clean Interactive Calendar Date Picker */}
             <div className="date-filter-pill" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 0.85rem' }}>
               <span>📅</span>
               <input
-                type="month"
-                value={selectedMonthYear}
-                onChange={(e) => setSelectedMonthYear(e.target.value)}
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
                 style={{
                   border: 'none',
                   outline: 'none',
@@ -139,6 +137,16 @@ const Dashboard = () => {
                   fontFamily: 'inherit'
                 }}
               />
+              {selectedDate && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate('')}
+                  title="Clear date filter"
+                  style={{ border: 'none', background: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', marginLeft: '0.2rem' }}
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             <button className="btn-add-expense" onClick={() => navigate('/add-expense')}>
@@ -219,7 +227,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            {/* Top Row: 4 Metric Cards Filtered by Calendar Month */}
+            {/* Top Row: 4 Metric Cards Filtered by Calendar Date */}
             <div className="dashboard-grid-4">
               <SummaryCard
                 title="Total Income"
@@ -248,10 +256,10 @@ const Dashboard = () => {
                 iconColor="#2563eb"
               />
               <SummaryCard
-                title="Selected Month"
+                title="Selected Date"
                 value={displayTotalExpenses}
                 icon="📅"
-                trend={formattedMonthLabel}
+                trend={formattedDateLabel}
                 iconBg="#f3e8ff"
                 iconColor="#9333ea"
               />
@@ -289,10 +297,10 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>
-                    Financial Insight ({formattedMonthLabel})
+                    Financial Insight ({formattedDateLabel})
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    Net savings: ₹{netSavings.toLocaleString('en-IN')} out of ₹{monthlyIncome.toLocaleString('en-IN')} income.
+                    Net savings: ₹{netSavings.toLocaleString('en-IN')} out of ₹{monthlyIncome.toLocaleString('en-IN')} income on {formattedDateLabel}.
                   </p>
                 </div>
               </div>
