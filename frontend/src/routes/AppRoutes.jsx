@@ -8,6 +8,7 @@ import Register from '../pages/auth/Register';
 import AddExpense from '../pages/AddExpense';
 import Budgets from '../pages/Budgets';
 import Reports from '../pages/Reports';
+import Categories from '../pages/Categories';
 import HealthStatus from '../pages/HealthStatus';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -54,6 +55,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Reports />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/categories"
+        element={
+          <ProtectedRoute>
+            <Categories />
           </ProtectedRoute>
         }
       />

@@ -46,10 +46,10 @@ const Sidebar = () => {
           <span>Reports</span>
         </NavLink>
 
-        <div className="sidebar-nav-item disabled">
+        <NavLink to="/categories" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">🏷️</span>
           <span>Categories</span>
-        </div>
+        </NavLink>
 
         <div className="sidebar-nav-item disabled">
           <span className="nav-icon">🎯</span>
