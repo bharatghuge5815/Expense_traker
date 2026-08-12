@@ -20,35 +20,51 @@ const Sidebar = () => {
           <span className="sidebar-logo-text">Expense Tracker</span>
         </div>
 
-        {/* User Card Under Expense Tracker */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.65rem',
-          padding: '0.6rem 0.75rem',
-          backgroundColor: '#f0fdf4',
-          border: '1px solid #bbf7d0',
-          borderRadius: '12px'
-        }}>
+        {/* User Card Under Expense Tracker (Clickable to /profile) */}
+        <div
+          onClick={() => navigate('/profile')}
+          title="Click to view & edit profile"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            padding: '0.6rem 0.75rem',
+            backgroundColor: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'transform 0.15 ease, box-shadow 0.15s ease'
+          }}
+        >
           <div style={{
-            width: '34px',
-            height: '34px',
+            width: '36px',
+            height: '36px',
             borderRadius: '50%',
             backgroundColor: '#dcfce7',
+            border: '1px solid #bbf7d0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '1.1rem',
-            flexShrink: 0
+            flexShrink: 0,
+            overflow: 'hidden'
           }}>
-            👤
+            {localStorage.getItem('user_avatar_image') ? (
+              <img
+                src={localStorage.getItem('user_avatar_image')}
+                alt="User Avatar"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              localStorage.getItem('user_avatar_emoji') || '👤'
+            )}
           </div>
           <div style={{ overflow: 'hidden', flex: 1 }}>
             <div style={{ fontSize: '0.85rem', fontWeight: '700', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user?.name || 'Ajinkya Bhalerao'}
+              {localStorage.getItem('user_profile_name') || user?.name || 'Ajinkya Bhalerao'}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user?.email || 'user@gmail.com'}
+              {localStorage.getItem('user_profile_email') || user?.email || 'user@gmail.com'}
             </div>
           </div>
         </div>

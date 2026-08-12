@@ -11,6 +11,7 @@ import Reports from '../pages/Reports';
 import Categories from '../pages/Categories';
 import Goals from '../pages/Goals';
 import Settings from '../pages/Settings';
+import Profile from '../pages/Profile';
 import HealthStatus from '../pages/HealthStatus';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -88,7 +89,7 @@ const AppRoutes = () => {
         path="/profile"
         element={
           <ProtectedRoute>
-            <Home />
+            <Profile />
           </ProtectedRoute>
         }
       />
