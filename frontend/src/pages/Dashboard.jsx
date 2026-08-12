@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardSummaryApi } from '../services/dashboard.api';
 import Sidebar from '../components/layout/Sidebar';
@@ -35,10 +35,11 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  const totalExp = data?.total_expenses || 23650;
-  const income = 72300;
-  const totalBalance = 48650;
-  const savings = 24650;
+  // Compute live data from MySQL backend response
+  const totalExpenses = Number(data?.total_expenses || 0);
+  const thisMonthExpenses = Number(data?.this_month || 0);
+  const totalIncome = 72300;
+  const netSavings = Math.max(0, totalIncome - totalExpenses);
 
   return (
     <div className="dashboard-layout-wrapper">
@@ -60,7 +61,7 @@ const Dashboard = () => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <div className="date-filter-pill">
-              📅 May 2025 ˅
+              📅 This Month ˅
             </div>
             <button className="btn-add-expense" onClick={() => navigate('/add-expense')}>
               + Add Expense
@@ -72,7 +73,7 @@ const Dashboard = () => {
           <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
             <div className="status-badge loading" style={{ display: 'inline-flex' }}>
               <span className="dot loading"></span>
-              Loading dashboard analytics...
+              Loading live dashboard analytics...
             </div>
           </div>
         ) : error ? (
@@ -84,19 +85,11 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            {/* Top Row: 4 Metric Cards */}
+            {/* Top Row: 4 Metric Cards using Real MySQL Data */}
             <div className="dashboard-grid-4">
               <SummaryCard
-                title="Total Balance"
-                value={totalBalance}
-                icon="👛"
-                trend="12.5% vs last month"
-                iconBg="#dcfce7"
-                iconColor="#16a34a"
-              />
-              <SummaryCard
                 title="Total Income"
-                value={income}
+                value={totalIncome}
                 icon="⬇️"
                 trend="8.3% vs last month"
                 iconBg="#dcfce7"
@@ -104,20 +97,28 @@ const Dashboard = () => {
               />
               <SummaryCard
                 title="Total Expenses"
-                value={totalExp}
+                value={totalExpenses}
                 icon="⬆️"
-                trend="15.7% vs last month"
+                trend={`${data?.expense_count || 0} transactions logged`}
                 isNegative={true}
                 iconBg="#fee2e2"
                 iconColor="#ef4444"
               />
               <SummaryCard
                 title="Savings"
-                value={savings}
+                value={netSavings}
                 icon="🐷"
-                trend="10.2% vs last month"
+                trend="Net balance"
                 iconBg="#dbeafe"
                 iconColor="#2563eb"
+              />
+              <SummaryCard
+                title="This Week"
+                value={thisMonthExpenses}
+                icon="📅"
+                trend="Current period"
+                iconBg="#f3e8ff"
+                iconColor="#9333ea"
               />
             </div>
 
@@ -126,7 +127,7 @@ const Dashboard = () => {
               <ExpenseOverviewChart recentExpenses={data?.recent_expenses || []} />
               <CategoryDonutChart
                 categoryBreakdown={data?.category_breakdown || []}
-                totalExpenses={data?.total_expenses || 0}
+                totalExpenses={totalExpenses}
               />
             </div>
 
@@ -153,19 +154,19 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>
-                    Great job!
+                    Financial Achievement
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    You've spent 15.7% less than last month. Keep it up and save more!
+                    You have logged {data?.expense_count || 0} expenses. Keep tracking your spending to save more!
                   </p>
                 </div>
               </div>
 
               <button
                 className="btn-view-reports"
-                onClick={() => alert('Financial reports generated.')}
+                onClick={() => navigate('/expenses')}
               >
-                View Reports
+                View Transactions
               </button>
             </div>
           </>

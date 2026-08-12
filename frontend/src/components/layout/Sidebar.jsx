@@ -19,36 +19,43 @@ const Sidebar = () => {
         <span className="sidebar-logo-text">Expense Tracker</span>
       </div>
 
-      {/* Main Nav Links */}
+      {/* Main Nav Links with Exact Emojis */}
       <nav className="sidebar-nav">
         <NavLink to="/" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">📊</span>
           <span>Dashboard</span>
         </NavLink>
+
         <NavLink to="/expenses" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">📝</span>
           <span>Transactions</span>
         </NavLink>
+
         <NavLink to="/add-expense" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">➕</span>
           <span>Add Expense</span>
         </NavLink>
+
         <div className="sidebar-nav-item disabled">
-          <span className="nav-icon">👛</span>
+          <span className="nav-icon">🐷</span>
           <span>Budgets</span>
         </div>
+
         <div className="sidebar-nav-item disabled">
           <span className="nav-icon">📈</span>
           <span>Reports</span>
         </div>
+
         <div className="sidebar-nav-item disabled">
           <span className="nav-icon">🏷️</span>
           <span>Categories</span>
         </div>
+
         <div className="sidebar-nav-item disabled">
           <span className="nav-icon">🎯</span>
           <span>Goals</span>
         </div>
+
         <div className="sidebar-nav-item disabled">
           <span className="nav-icon">⚙️</span>
           <span>Settings</span>
@@ -59,7 +66,7 @@ const Sidebar = () => {
       <div className="sidebar-promo-card">
         <h4>Track. Save. Achieve.</h4>
         <p>Set budgets and achieve your financial goals faster.</p>
-        <div className="promo-illustration">👛</div>
+        <div className="promo-illustration">🐷</div>
         <button className="btn-promo" onClick={() => alert('Goal tracking feature active.')}>
           Set Goal
         </button>
