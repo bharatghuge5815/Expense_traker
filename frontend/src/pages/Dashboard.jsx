@@ -16,10 +16,13 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Calendar Filter Mode: 'DATE' (Specific Date YYYY-MM-DD) or 'MONTH' (Full Month YYYY-MM)
-  const [filterMode, setFilterMode] = useState('DATE');
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [selectedMonthYear, setSelectedMonthYear] = useState(() => new Date().toISOString().slice(0, 7));
+  // Calendar Month-Year Filter State (defaults to current YYYY-MM e.g. 2026-08)
+  const [selectedMonthYear, setSelectedMonthYear] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  });
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -40,31 +43,27 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  // Filter raw expenses by selected Date or Month
+  // Filter raw expenses by selected Calendar Month & Year
   const rawExpenses = data?.recent_expenses || [];
   const filteredExpenses = rawExpenses.filter((item) => {
     if (!item.expense_date) return true;
-    const itemDateStr = new Date(item.expense_date).toISOString().split('T')[0];
-
-    if (filterMode === 'DATE') {
-      return itemDateStr === selectedDate;
-    } else {
-      return itemDateStr.slice(0, 7) === selectedMonthYear;
-    }
+    const itemMonthYear = new Date(item.expense_date).toISOString().slice(0, 7);
+    return itemMonthYear === selectedMonthYear;
   });
 
-  // Calculate dynamic totals for selected calendar date/month
+  // Calculate dynamic totals for selected calendar month
   const periodExpensesSum = filteredExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const displayTotalExpenses = periodExpensesSum > 0 ? periodExpensesSum : Number(data?.total_expenses || 0);
   const totalIncome = 72300;
   const netSavings = Math.max(0, totalIncome - displayTotalExpenses);
 
-  // Formatted display label
-  const formattedLabel = filterMode === 'DATE'
-    ? new Date(selectedDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-    : new Date(`${selectedMonthYear}-01`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  // Formatted display label (e.g. "August 2026")
+  const formattedMonthLabel = new Date(`${selectedMonthYear}-01`).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric'
+  });
 
-  // Compute dynamic category breakdown
+  // Compute dynamic category breakdown for selected calendar month
   const periodCategoryMap = {};
   filteredExpenses.forEach(item => {
     const cat = item.category_name || 'Other';
@@ -89,58 +88,29 @@ const Dashboard = () => {
               Welcome back, {user?.name || 'Ajinkya'}! 👋
             </h1>
             <p className="dashboard-subgreeting">
-              Here's what's happening with your finances on {formattedLabel}.
+              Here's what's happening with your finances in {formattedMonthLabel}.
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            {/* Filter Mode Selector: Specific Date vs Full Month */}
-            <select
-              value={filterMode}
-              onChange={(e) => setFilterMode(e.target.value)}
-              className="date-filter-pill"
-              style={{ padding: '0.55rem 0.75rem', outline: 'none', cursor: 'pointer' }}
-            >
-              <option value="DATE">Specific Date</option>
-              <option value="MONTH">Full Month</option>
-            </select>
-
-            {/* Interactive Calendar Date Picker */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            {/* Clean Calendar Month-Year Picker */}
             <div className="date-filter-pill" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.55rem 0.85rem' }}>
               <span>📅</span>
-              {filterMode === 'DATE' ? (
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    backgroundColor: 'transparent',
-                    fontWeight: '600',
-                    fontSize: '0.9rem',
-                    color: '#334155',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit'
-                  }}
-                />
-              ) : (
-                <input
-                  type="month"
-                  value={selectedMonthYear}
-                  onChange={(e) => setSelectedMonthYear(e.target.value)}
-                  style={{
-                    border: 'none',
-                    outline: 'none',
-                    backgroundColor: 'transparent',
-                    fontWeight: '600',
-                    fontSize: '0.9rem',
-                    color: '#334155',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit'
-                  }}
-                />
-              )}
+              <input
+                type="month"
+                value={selectedMonthYear}
+                onChange={(e) => setSelectedMonthYear(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                  fontWeight: '600',
+                  fontSize: '0.9rem',
+                  color: '#334155',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              />
             </div>
 
             <button className="btn-add-expense" onClick={() => navigate('/add-expense')}>
@@ -165,7 +135,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            {/* Top Row: 4 Metric Cards Filtered by Calendar Date/Month */}
+            {/* Top Row: 4 Metric Cards Filtered by Calendar Month */}
             <div className="dashboard-grid-4">
               <SummaryCard
                 title="Total Income"
@@ -193,10 +163,10 @@ const Dashboard = () => {
                 iconColor="#2563eb"
               />
               <SummaryCard
-                title="Selected Date"
+                title="Selected Month"
                 value={displayTotalExpenses}
                 icon="📅"
-                trend={formattedLabel}
+                trend={formattedMonthLabel}
                 iconBg="#f3e8ff"
                 iconColor="#9333ea"
               />
@@ -234,10 +204,10 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>
-                    Financial Insight ({formattedLabel})
+                    Financial Insight ({formattedMonthLabel})
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    Showing metrics for {formattedLabel}. Keep tracking to save more!
+                    Showing metrics for {formattedMonthLabel}. Keep tracking to save more!
                   </p>
                 </div>
               </div>
