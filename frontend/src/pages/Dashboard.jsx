@@ -16,6 +16,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Period Filter State: THIS_MONTH, LAST_MONTH, THIS_YEAR, ALL_TIME
+  const [selectedPeriod, setSelectedPeriod] = useState('THIS_MONTH');
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -35,11 +38,46 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  // Compute live data from MySQL backend response
-  const totalExpenses = Number(data?.total_expenses || 0);
-  const thisMonthExpenses = Number(data?.this_month || 0);
+  // Filter raw recent expenses by selected date period
+  const rawExpenses = data?.recent_expenses || [];
+  const filteredExpenses = rawExpenses.filter((item) => {
+    if (!item.expense_date) return true;
+    const itemDate = new Date(item.expense_date);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    if (selectedPeriod === 'THIS_MONTH') {
+      return itemDate.getFullYear() === currentYear && itemDate.getMonth() === currentMonth;
+    }
+    if (selectedPeriod === 'LAST_MONTH') {
+      const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+      return itemDate.getFullYear() === lastMonthYear && itemDate.getMonth() === lastMonth;
+    }
+    if (selectedPeriod === 'THIS_YEAR') {
+      return itemDate.getFullYear() === currentYear;
+    }
+    return true; // ALL_TIME
+  });
+
+  // Calculate dynamic totals for selected period
+  const periodExpensesSum = filteredExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const displayTotalExpenses = periodExpensesSum > 0 ? periodExpensesSum : Number(data?.total_expenses || 0);
+  const thisMonthValue = Number(data?.this_month || periodExpensesSum || 0);
   const totalIncome = 72300;
-  const netSavings = Math.max(0, totalIncome - totalExpenses);
+  const netSavings = Math.max(0, totalIncome - displayTotalExpenses);
+
+  // Compute dynamic category breakdown for selected period
+  const periodCategoryMap = {};
+  filteredExpenses.forEach(item => {
+    const cat = item.category_name || 'Other';
+    periodCategoryMap[cat] = (periodCategoryMap[cat] || 0) + Number(item.amount || 0);
+  });
+
+  const periodCategoryBreakdown = Object.keys(periodCategoryMap).length > 0
+    ? Object.keys(periodCategoryMap).map(cat => ({ category: cat, amount: periodCategoryMap[cat] }))
+    : data?.category_breakdown || [];
 
   return (
     <div className="dashboard-layout-wrapper">
@@ -60,9 +98,19 @@ const Dashboard = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div className="date-filter-pill">
-              📅 This Month ˅
-            </div>
+            {/* Interactive "This Month" Date Filter Dropdown */}
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="date-filter-pill"
+              style={{ outline: 'none', cursor: 'pointer' }}
+            >
+              <option value="THIS_MONTH">📅 This Month</option>
+              <option value="LAST_MONTH">📅 Last Month</option>
+              <option value="THIS_YEAR">📅 This Year</option>
+              <option value="ALL_TIME">📅 All Time</option>
+            </select>
+
             <button className="btn-add-expense" onClick={() => navigate('/add-expense')}>
               + Add Expense
             </button>
@@ -85,7 +133,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            {/* Top Row: 4 Metric Cards using Real MySQL Data */}
+            {/* Top Row: 4 Metric Cards Filtered by Period */}
             <div className="dashboard-grid-4">
               <SummaryCard
                 title="Total Income"
@@ -97,9 +145,9 @@ const Dashboard = () => {
               />
               <SummaryCard
                 title="Total Expenses"
-                value={totalExpenses}
+                value={displayTotalExpenses}
                 icon="⬆️"
-                trend={`${data?.expense_count || 0} transactions logged`}
+                trend={`${filteredExpenses.length || data?.expense_count || 0} transactions`}
                 isNegative={true}
                 iconBg="#fee2e2"
                 iconColor="#ef4444"
@@ -113,10 +161,10 @@ const Dashboard = () => {
                 iconColor="#2563eb"
               />
               <SummaryCard
-                title="This Week"
-                value={thisMonthExpenses}
+                title="This Period"
+                value={thisMonthValue}
                 icon="📅"
-                trend="Current period"
+                trend={selectedPeriod.replace('_', ' ')}
                 iconBg="#f3e8ff"
                 iconColor="#9333ea"
               />
@@ -124,17 +172,17 @@ const Dashboard = () => {
 
             {/* Middle Row: Overview Chart + Category Donut Chart */}
             <div className="dashboard-grid-2" style={{ marginBottom: '1.5rem' }}>
-              <ExpenseOverviewChart recentExpenses={data?.recent_expenses || []} />
+              <ExpenseOverviewChart recentExpenses={filteredExpenses.length > 0 ? filteredExpenses : rawExpenses} />
               <CategoryDonutChart
-                categoryBreakdown={data?.category_breakdown || []}
-                totalExpenses={totalExpenses}
+                categoryBreakdown={periodCategoryBreakdown}
+                totalExpenses={displayTotalExpenses}
               />
             </div>
 
             {/* Bottom Row: Recent Transactions + Budget Summary */}
             <div className="dashboard-grid-2" style={{ marginBottom: '1.5rem' }}>
-              <RecentExpenses recentExpenses={data?.recent_expenses || []} />
-              <BudgetSummary categoryBreakdown={data?.category_breakdown || []} />
+              <RecentExpenses recentExpenses={filteredExpenses.length > 0 ? filteredExpenses : rawExpenses} />
+              <BudgetSummary categoryBreakdown={periodCategoryBreakdown} />
             </div>
 
             {/* Bottom Insight Banner */}
@@ -154,19 +202,19 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>
-                    Financial Achievement
+                    Financial Insight ({selectedPeriod.replace('_', ' ')})
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    You have logged {data?.expense_count || 0} expenses. Keep tracking your spending to save more!
+                    Showing metrics for {selectedPeriod.toLowerCase().replace('_', ' ')}. Keep tracking to save more!
                   </p>
                 </div>
               </div>
 
               <button
                 className="btn-view-reports"
-                onClick={() => navigate('/expenses')}
+                onClick={() => navigate('/reports')}
               >
-                View Transactions
+                View Reports
               </button>
             </div>
           </>
