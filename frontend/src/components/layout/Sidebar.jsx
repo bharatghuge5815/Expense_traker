@@ -37,7 +37,7 @@ const Sidebar = () => {
         </NavLink>
 
         <div className="sidebar-nav-item disabled">
-          <span className="nav-icon">🐷</span>
+          <span className="nav-icon">💰</span>
           <span>Budgets</span>
         </div>
 
