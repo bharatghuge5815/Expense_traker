@@ -10,6 +10,7 @@ import Budgets from '../pages/Budgets';
 import Reports from '../pages/Reports';
 import Categories from '../pages/Categories';
 import Goals from '../pages/Goals';
+import Settings from '../pages/Settings';
 import HealthStatus from '../pages/HealthStatus';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -72,6 +73,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Goals />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />

@@ -56,10 +56,10 @@ const Sidebar = () => {
           <span>Goals</span>
         </NavLink>
 
-        <div className="sidebar-nav-item disabled">
+        <NavLink to="/settings" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">⚙️</span>
           <span>Settings</span>
-        </div>
+        </NavLink>
       </nav>
 
       {/* Goal Promo Card */}
