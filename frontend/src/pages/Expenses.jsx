@@ -175,7 +175,7 @@ const Expenses = () => {
               Total Balance: <strong style={{ color: '#16a34a' }}>₹{totalBalanceSum.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
             </div>
 
-            <button className="btn-add-expense" onClick={handleOpenAddForm}>
+            <button className="btn-add-expense" onClick={() => navigate('/add-expense')}>
               + Add Expense
             </button>
           </div>

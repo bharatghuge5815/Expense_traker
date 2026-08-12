@@ -29,7 +29,7 @@ const Sidebar = () => {
           <span className="nav-icon">📝</span>
           <span>Transactions</span>
         </NavLink>
-        <NavLink to="/expenses" className="sidebar-nav-item">
+        <NavLink to="/add-expense" className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">➕</span>
           <span>Add Expense</span>
         </NavLink>

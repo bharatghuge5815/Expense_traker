@@ -5,6 +5,7 @@ import Expenses from '../pages/Expenses';
 import Home from '../pages/Home';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
+import AddExpense from '../pages/AddExpense';
 import HealthStatus from '../pages/HealthStatus';
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -27,6 +28,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Expenses />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/add-expense"
+        element={
+          <ProtectedRoute>
+            <AddExpense />
           </ProtectedRoute>
         }
       />

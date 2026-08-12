@@ -62,7 +62,7 @@ const Dashboard = () => {
             <div className="date-filter-pill">
               📅 May 2025 ˅
             </div>
-            <button className="btn-add-expense" onClick={() => navigate('/expenses')}>
+            <button className="btn-add-expense" onClick={() => navigate('/add-expense')}>
               + Add Expense
             </button>
           </div>
