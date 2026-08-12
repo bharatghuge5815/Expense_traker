@@ -28,6 +28,14 @@ const Expenses = () => {
   const [editingExpense, setEditingExpense] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Dynamic Monthly Income State
+  const [monthlyIncome, setMonthlyIncome] = useState(() => {
+    const saved = localStorage.getItem('user_monthly_income');
+    return saved ? Number(saved) : 72300;
+  });
+  const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [incomeInput, setIncomeInput] = useState('');
+
   // Fetch Categories on Mount
   useEffect(() => {
     const fetchCategories = async () => {
@@ -185,11 +193,15 @@ const Expenses = () => {
         <div className="dashboard-grid-4" style={{ marginBottom: '1.5rem' }}>
           <SummaryCard
             title="Total Income"
-            value={totalIncomeSum}
+            value={monthlyIncome}
             icon="⬇️"
-            trend="8.3% vs last month"
+            trend="Editable monthly income"
             iconBg="#dcfce7"
             iconColor="#16a34a"
+            onEdit={() => {
+              setIncomeInput(monthlyIncome.toString());
+              setShowIncomeModal(true);
+            }}
           />
           <SummaryCard
             title="Total Expenses"

@@ -16,7 +16,17 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Calendar Month-Year Filter State (defaults to current YYYY-MM e.g. 2026-08)
+  // Dynamic Monthly Income State (persisted to localStorage)
+  const [monthlyIncome, setMonthlyIncome] = useState(() => {
+    const saved = localStorage.getItem('user_monthly_income');
+    return saved ? Number(saved) : 72300;
+  });
+
+  // Edit Income Modal State
+  const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [incomeInput, setIncomeInput] = useState('');
+
+  // Calendar Month-Year Filter State
   const [selectedMonthYear, setSelectedMonthYear] = useState(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -54,8 +64,7 @@ const Dashboard = () => {
   // Calculate dynamic totals for selected calendar month
   const periodExpensesSum = filteredExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const displayTotalExpenses = periodExpensesSum > 0 ? periodExpensesSum : Number(data?.total_expenses || 0);
-  const totalIncome = 72300;
-  const netSavings = Math.max(0, totalIncome - displayTotalExpenses);
+  const netSavings = Math.max(0, monthlyIncome - displayTotalExpenses);
 
   // Formatted display label (e.g. "August 2026")
   const formattedMonthLabel = new Date(`${selectedMonthYear}-01`).toLocaleDateString('en-US', {
@@ -73,6 +82,25 @@ const Dashboard = () => {
   const periodCategoryBreakdown = Object.keys(periodCategoryMap).length > 0
     ? Object.keys(periodCategoryMap).map(cat => ({ category: cat, amount: periodCategoryMap[cat] }))
     : data?.category_breakdown || [];
+
+  // Edit Income Handlers
+  const handleOpenIncomeModal = () => {
+    setIncomeInput(monthlyIncome.toString());
+    setShowIncomeModal(true);
+  };
+
+  const handleSaveIncome = (e) => {
+    e.preventDefault();
+    const numIncome = Number(incomeInput);
+    if (isNaN(numIncome) || numIncome <= 0) {
+      alert('Please enter a valid positive income amount.');
+      return;
+    }
+
+    setMonthlyIncome(numIncome);
+    localStorage.setItem('user_monthly_income', numIncome.toString());
+    setShowIncomeModal(false);
+  };
 
   return (
     <div className="dashboard-layout-wrapper">
@@ -119,6 +147,62 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Edit Monthly Income Modal */}
+        {showIncomeModal && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.5)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div className="dashboard-card" style={{ width: '100%', maxWidth: '420px', padding: '1.75rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.5rem' }}>
+                Edit Monthly Income 💵
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.25rem' }}>
+                Set your expected total monthly income to calculate net savings
+              </p>
+
+              <form onSubmit={handleSaveIncome}>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label className="auth-input-label">Monthly Income (₹) *</label>
+                  <input
+                    type="number"
+                    value={incomeInput}
+                    onChange={(e) => setIncomeInput(e.target.value)}
+                    placeholder="Enter monthly income e.g. 72300"
+                    className="auth-input-field"
+                    style={{ paddingLeft: '1rem', fontSize: '1.1rem', fontWeight: '700' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowIncomeModal(false)}
+                    style={{
+                      padding: '0.65rem 1.1rem', borderRadius: '8px',
+                      border: '1px solid #e2e8f0', backgroundColor: '#ffffff',
+                      color: '#64748b', fontWeight: '600', cursor: 'pointer'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-auth-primary"
+                    style={{ width: 'auto', padding: '0.65rem 1.25rem' }}
+                  >
+                    Save Income
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="dashboard-card" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
             <div className="status-badge loading" style={{ display: 'inline-flex' }}>
@@ -139,11 +223,12 @@ const Dashboard = () => {
             <div className="dashboard-grid-4">
               <SummaryCard
                 title="Total Income"
-                value={totalIncome}
+                value={monthlyIncome}
                 icon="⬇️"
-                trend="8.3% vs last month"
+                trend="Editable monthly income"
                 iconBg="#dcfce7"
                 iconColor="#16a34a"
+                onEdit={handleOpenIncomeModal}
               />
               <SummaryCard
                 title="Total Expenses"
@@ -207,7 +292,7 @@ const Dashboard = () => {
                     Financial Insight ({formattedMonthLabel})
                   </h4>
                   <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                    Showing metrics for {formattedMonthLabel}. Keep tracking to save more!
+                    Net savings: ₹{netSavings.toLocaleString('en-IN')} out of ₹{monthlyIncome.toLocaleString('en-IN')} income.
                   </p>
                 </div>
               </div>
